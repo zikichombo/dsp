@@ -9,21 +9,20 @@ import (
 	"image/png"
 	"os"
 	"testing"
+	"time"
 
-	"zikichombo.org/codec/wav"
+	"zikichombo.org/sound/freq"
+	"zikichombo.org/sound/gen"
 	"zikichombo.org/sound/ops"
 )
 
 func TestPlot(t *testing.T) {
-	//n := gen.Sin(820 * freq.Hertz)
-	var n audio.Source
-	n, _ = wav.Load("/Users/scott/Dev/dawg/snd/Happy14/0.wav")
-	//n = ops.AfterDur(n, 20*time.Second)
+	n := ops.LimitDur(gen.Sin(820*freq.Hertz), time.Second)
 	Ns := []int{128, 256, 512, 1024, 2048}
 	b := image.Rect(0, 0, 768, 384)
 	for _, N := range Ns {
 		d := make([]float64, N)
-		ops.Slurp(n, d)
+		n.Receive(d)
 		dct := New(N)
 		dct.Do(d)
 		p := 0.0
