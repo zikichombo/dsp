@@ -32,7 +32,7 @@ func FreqBin(sFreq, aFreq freq.T, n int) int {
 	return int(r)
 }
 
-// FreqBinRange gives the range of frequencies in a DFT
+// BinRange gives the range of frequencies in a DFT
 // frequency bin b where the DFT is based on an n-sample
 // window at rate sFreq.
 func BinRange(sFreq freq.T, n, b int) (l, u freq.T) {

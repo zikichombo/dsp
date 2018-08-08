@@ -5,8 +5,8 @@ package cmplx
 
 import "fmt"
 
-// Type K describes a convolver object T which
-// has a precomputed argument component ("kernel").
+// K describes a convolver object T which has a precomputed argument component
+// ("kernel").
 type K struct {
 	t      *T
 	kernel []complex128
@@ -19,7 +19,7 @@ type K struct {
 // length.
 func (k *K) Conv(arg []complex128) ([]complex128, error) {
 	if len(arg) != k.t.n {
-		return nil, fmt.Errorf("arg dimension mismatch, %d != %d\n", len(arg), k.t.m)
+		return nil, fmt.Errorf("arg dimension mismatch, %d != %d", len(arg), k.t.m)
 	}
 	arg = k.t.pad(k.t.WinB(arg), k.t.PadL())
 	k.t.ft.Do(arg)
@@ -63,7 +63,7 @@ func NewK(kernel []complex128, argLen int) *K {
 
 func (t *T) K(kernel []complex128) (*K, error) {
 	if len(kernel) != t.m {
-		return nil, fmt.Errorf("kernel length wrong %d != %d\n", len(kernel), t.m)
+		return nil, fmt.Errorf("kernel length wrong %d != %d", len(kernel), t.m)
 	}
 	krn := t.WinA(nil)
 	copy(krn, kernel)

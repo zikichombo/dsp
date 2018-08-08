@@ -5,7 +5,7 @@ package wfn
 
 import "math"
 
-// Type T describes a concrete window function.
+// T describes a concrete window function.
 type T []float64
 
 // Given a function f with domain from [-pi..pi), return a window

@@ -9,14 +9,14 @@ import (
 	"zikichombo.org/dsp/fft"
 )
 
-// Type T holds state for performing n by m sized convolutions.
+// T holds state for performing n by m sized convolutions.
 type T struct {
 	n, m int
 	winB []complex128
 	ft   *fft.T
 }
 
-// New creates a new convolver object
+// New creates a new convolver object.
 func New(m, n int) *T {
 	L := n + m - 1
 	res := &T{
@@ -32,7 +32,7 @@ func (t *T) N() int {
 	return t.n
 }
 
-// M returns the length of the first argument
+// M returns the length of the first argument.
 func (t *T) M() int {
 	return t.m
 }
@@ -60,10 +60,10 @@ func (t *T) PadL() int {
 // the results in a and returning them.
 func (t *T) Conv(a, b []complex128) ([]complex128, error) {
 	if len(a) != t.m {
-		return nil, fmt.Errorf("operand dimension mismatch: %d != %d\n", len(a), t.m)
+		return nil, fmt.Errorf("operand dimension mismatch: %d != %d", len(a), t.m)
 	}
 	if len(b) != t.n {
-		return nil, fmt.Errorf("kernel dimension mismatch: %d != %d\n", len(b), t.n)
+		return nil, fmt.Errorf("kernel dimension mismatch: %d != %d", len(b), t.n)
 	}
 	copy(t.winB, b)
 	return t.conv(a, t.winB[:len(b)])

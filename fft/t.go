@@ -8,9 +8,7 @@ import (
 	"math/cmplx"
 )
 
-// Type T maintains state for efficient
-// repeated computation on windows of
-// data.
+// T maintains state for efficient repeated computation on windows of data.
 type T struct {
 	n, padN int       // padN = n if n is power of 2, least power of 2 >= 2*n + 1 otherwise.
 	twids   *twiddles // size padN
@@ -29,9 +27,8 @@ type T struct {
 func New(n int) *T {
 	if is2pow(n) {
 		return NewT(n, n)
-	} else {
-		return NewT(n, 1<<log2(2*n-1))
 	}
+	return NewT(n, 1<<log2(2*n-1))
 }
 
 // we factor this out so we can test case where
@@ -82,7 +79,7 @@ func (t *T) Cap() int {
 // with t.  A new dst is allocated and returned if dst is nil.
 func (t *T) To(dst, src []complex128) ([]complex128, error) {
 	if len(src) != t.n {
-		return nil, fmt.Errorf("wrong input size, got %d expected %d\n", len(src), t.n)
+		return nil, fmt.Errorf("wrong input size, got %d expected %d", len(src), t.n)
 	}
 	if dst == nil {
 		dst = t.Win(nil)
@@ -126,7 +123,7 @@ func (t *T) Inv(d []complex128) error {
 // with t.  A new dst is allocated and returned if dst is nil.
 func (t *T) InvTo(dst, src []complex128) ([]complex128, error) {
 	if len(src) != t.n {
-		return nil, fmt.Errorf("wrong input size, got %d expected %d\n", len(src), t.n)
+		return nil, fmt.Errorf("wrong input size, got %d expected %d", len(src), t.n)
 	}
 	if dst == nil {
 		dst = t.Win(nil)
