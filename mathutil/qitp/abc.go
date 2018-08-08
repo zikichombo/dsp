@@ -25,7 +25,7 @@ func Abc(p, q, r float64) (a, b, c float64) {
 	return
 }
 
-// translates standard to vertex form y = a(x - h)^2 + k
+// Abc2Hk translates standard to vertex form y = a(x - h)^2 + k
 func Abc2Hk(a, b, c float64) (h, k float64) {
 	h = -b / (2 * a)
 	k = a*h*h + b*h + c

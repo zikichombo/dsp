@@ -16,7 +16,7 @@ import (
 	"zikichombo.org/sound/sample"
 )
 
-// Type S provides convenience wrappers around a ft spectrum.
+// S provides convenience wrappers around a ft spectrum.
 type S struct {
 	mags     []float64
 	phases   []float64
@@ -77,7 +77,7 @@ func (s *S) SetMag(i int, m float64) {
 	}
 }
 
-// Mag returns the magnitude in decibels
+// MagDb returns the magnitude in decibels
 func (s *S) MagDb(i int) float64 {
 	v := s.Mag(i)
 	if v == 0 {
@@ -220,7 +220,7 @@ func (s *S) ItpPeaks(dst []float64) []float64 {
 
 func (s *S) FromHalfComplex(hc HalfComplex) error {
 	if len(hc) != len(s.mags) {
-		return fmt.Errorf("mismatched spectrum lengths: %d != %d\n", len(hc), len(s.mags))
+		return fmt.Errorf("mismatched spectrum lengths: %d != %d", len(hc), len(s.mags))
 	}
 	if len(hc) > 0 {
 		s.mags[0] = hc[0]
@@ -234,7 +234,7 @@ func (s *S) FromHalfComplex(hc HalfComplex) error {
 // FromRect resets s to use the complex spectrum d.
 func (s *S) FromRect(d []complex128) error {
 	if len(d) != len(s.mags) {
-		return fmt.Errorf("mismatched spectrum lengths: %d != %d\n", len(d), len(s.mags))
+		return fmt.Errorf("mismatched spectrum lengths: %d != %d", len(d), len(s.mags))
 	}
 	s.min, s.max = math.Inf(1), math.Inf(-1)
 	for i, c := range d {

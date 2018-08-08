@@ -36,7 +36,7 @@ func (h HalfComplex) Cmplx(i int) complex128 {
 	return complex(h[i], h[N-i])
 }
 
-// Sets the complex number i to c in h.
+// SetCmplx sets the complex number i to c in h.
 func (h HalfComplex) SetCmplx(i int, c complex128) {
 	N := len(h)
 	h[i] = real(c)
@@ -46,7 +46,7 @@ func (h HalfComplex) SetCmplx(i int, c complex128) {
 	h[N-i] = imag(c)
 }
 
-// Get the real part of the complex number at i.
+// Real returns the real part of the complex number at i.
 func (h HalfComplex) Real(i int) float64 {
 	return h[i]
 }
@@ -56,7 +56,7 @@ func (h HalfComplex) SetReal(i int, v float64) {
 	h[i] = v
 }
 
-// Get the imaginary part of the complex number at i.
+// Imag returns the imaginary part of the complex number at i.
 func (h HalfComplex) Imag(i int) float64 {
 	N := len(h)
 	if i == 0 || 2*i == N {
