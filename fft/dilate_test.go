@@ -8,8 +8,8 @@ import (
 	"math/cmplx"
 	"testing"
 
-	"zikichombo.org/sound/buf"
 	"zikichombo.org/sound/freq"
+	"zikichombo.org/sound/sndbuf"
 )
 
 func TestDilate(t *testing.T) {
@@ -18,7 +18,7 @@ func TestDilate(t *testing.T) {
 	fa := 32 * freq.Hertz
 	fb := fa * 3
 	fc := fa * 5
-	waves := buf.New(44100*freq.Hertz, 1)
+	waves := sndbuf.New(44100*freq.Hertz, 1)
 	for i := 0; i < L; i++ {
 		v := 0.0
 		for _, f := range []freq.T{fa, fb, fc} {
@@ -28,7 +28,6 @@ func TestDilate(t *testing.T) {
 		waves.Send([]float64{v})
 	}
 	waves.Seek(0)
-	//w := win.RdHop(waves, L, L)
 	d := make([]float64, L)
 	waves.Receive(d)
 	dc := make([]complex128, L)
@@ -55,7 +54,6 @@ func TestDilate(t *testing.T) {
 		waves.Send([]float64{v})
 	}
 	waves.Seek(0)
-	//w = win.RdHop(waves, L, L)
 	waves.Receive(d)
 	ddc := make([]complex128, len(d))
 	for i := range d {
