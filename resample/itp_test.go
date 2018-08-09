@@ -26,7 +26,7 @@ func TestItpLin(t *testing.T) {
 
 func TestItpSinc(t *testing.T) {
 	N := len(d) / 2
-	N -= 1
+	N--
 	ct := 0
 	for o := 1; o < N; o++ {
 		itper := NewSincItp(o)
@@ -47,7 +47,7 @@ func TestItpSinc(t *testing.T) {
 
 func TestItpWinSinc(t *testing.T) {
 	N := len(d) / 2
-	N -= 1
+	N--
 	ct := 0
 	for o := 1; o < N; o++ {
 		itper := NewWinSinc(o, wfn.Stretch(wfn.Blackman, math.Pi/float64(o)))
@@ -68,7 +68,7 @@ func TestItpWinSinc(t *testing.T) {
 
 func TestItpLanczos(t *testing.T) {
 	N := len(d) / 2
-	N -= 1
+	N--
 	ct := 0
 	for a := 1; a < 5; a++ {
 		for o := 1; o < N; o++ {

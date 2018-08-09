@@ -9,7 +9,7 @@ import (
 	"zikichombo.org/dsp/fft"
 )
 
-// Type T holds state for performing n by m sized convolutions.
+// T holds state for performing n by m sized convolutions.
 type T struct {
 	n, m int
 	winB []float64
@@ -60,10 +60,10 @@ func (t *T) PadL() int {
 // the results in a and returning them.
 func (t *T) Conv(a, b []float64) ([]float64, error) {
 	if len(a) != t.m {
-		return nil, fmt.Errorf("operand dimension mismatch: %d != %d\n", len(a), t.m)
+		return nil, fmt.Errorf("operand dimension mismatch: %d != %d", len(a), t.m)
 	}
 	if len(b) != t.n {
-		return nil, fmt.Errorf("kernel dimension mismatch: %d != %d\n", len(b), t.n)
+		return nil, fmt.Errorf("kernel dimension mismatch: %d != %d", len(b), t.n)
 	}
 	copy(t.winB, b)
 	return t.conv(a, t.winB[:len(b)])

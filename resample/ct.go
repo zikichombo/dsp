@@ -8,8 +8,8 @@ import (
 	"zikichombo.org/sound/ops"
 )
 
-// Type C provides continuous time representation of
-// sampled signal by means of interpolation.
+// C provides continuous time representation of sampled signal by means of
+// interpolation.
 type C struct {
 	src     sound.Source
 	shift   int

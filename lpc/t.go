@@ -13,14 +13,13 @@ import (
 
 const eps = 1e-12
 
-// New creates a new linear predictive coder object.
 type T struct {
 	rs    []float64
 	k     []float64
 	alpha []float64
 }
 
-// New returns a new lpc coder.
+// New returns a new linear predictive coder.
 func New(order int) *T {
 	return &T{
 		rs:    make([]float64, order+1),

@@ -9,7 +9,7 @@ import (
 	"math/cmplx"
 )
 
-// Type Real computes an FFT for a Real only data.
+// Real computes an FFT for a Real only data.
 type Real struct {
 	ft     *T
 	n      int
