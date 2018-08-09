@@ -1,0 +1,17 @@
+language: go
+
+go:
+  - "1.10"
+  - "tip"
+
+notifications:
+  on_success: false
+  on_failure: always
+
+install: go get -t zikichombo.org/dsp/...
+
+script: go test zikichombo.org/dsp/...
+
+
+
+
