@@ -1,4 +1,4 @@
-// Copyright 2018 The ZikiChomgo Authors. All rights reserved.  Use of this source
+// Copyright 2018 The ZikiChombo Authors. All rights reserved.  Use of this source
 // code is governed by a license that can be found in the License file.
 
 package fft
@@ -65,7 +65,7 @@ func Dilate(d []complex128, p, q int) {
 		return
 	}
 	n := len(d)
-	h := n / 2
+	h := n/2 - 1
 	if p > q {
 		for i := h; i >= 1; i-- {
 			dst := (i * p) / q

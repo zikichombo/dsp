@@ -1,4 +1,4 @@
-// Copyright 2018 The ZikiChomgo Authors. All rights reserved.  Use of this source
+// Copyright 2018 The ZikiChombo Authors. All rights reserved.  Use of this source
 // code is governed by a license that can be found in the License file.
 
 package fft
@@ -14,8 +14,8 @@ import (
 
 func TestDilate(t *testing.T) {
 	L := 4096
-	F := 1024 * freq.Hertz
-	fa := 32 * freq.Hertz
+	F := 1024 * freq.Hertz * 32
+	fa := 24 * freq.Hertz
 	fb := fa * 3
 	fc := fa * 5
 	waves := sndbuf.New(44100*freq.Hertz, 1)
@@ -37,9 +37,7 @@ func TestDilate(t *testing.T) {
 
 	ft := New(L)
 	ft.Do(dc)
-	printT(dc, F)
 	Dilate(dc, 5, 2)
-	printT(dc, F)
 
 	waves.Seek(0)
 	fa = (fa * 5) / 2
@@ -61,12 +59,11 @@ func TestDilate(t *testing.T) {
 	}
 
 	ft.Do(ddc)
-	printT(ddc, F)
 	for i := 0; i < L/2; i++ {
 		m1, _ := cmplx.Polar(dc[i])
 		m2, _ := cmplx.Polar(ddc[i])
 		if math.Abs(m2-m1) > 0.001 {
-			t.Errorf("bin %d %f v %f\n", i, dc[i], ddc[i])
+			t.Errorf("bin %d %f v %f (%f v %f)\n", i, dc[i], ddc[i], m1, m2)
 		}
 	}
 }
