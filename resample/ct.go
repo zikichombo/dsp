@@ -1,6 +1,7 @@
 package resample
 
 import (
+	"errors"
 	"math"
 
 	"zikichombo.org/dsp/wfn"
@@ -55,6 +56,8 @@ func (c *C) Eps(v float64) {
 	c.eps = v
 }
 
+var errMultiChanAt = errors.New("continuous time At called with multiple channels.")
+
 // At returns a continuous time interpolated sample
 // at index i.
 //
@@ -72,7 +75,14 @@ func (c *C) Eps(v float64) {
 //
 // At the edges, where insufficient or no neighbors are available,
 // the interpolation is truncated symmetrically.
+//
+// At only makes sense in the case that the source is monochannel.
+// If c.Channels() != 1, then At returns a non-nil error.
+//
 func (c *C) At(i float64) (float64, error) {
+	if c.Channels() != 1 {
+		return 0.0, errMultiChanAt
+	}
 	jf, jr := math.Modf(i)
 	j := int(jf)
 	for j+c.itper.Order() >= c.off+c.bufSize {
