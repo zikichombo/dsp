@@ -1,4 +1,2 @@
-zikichombo.org/codec v0.0.1 h1:tv5LE4iKch/76IzAhG+0uWwgTgqvm98QdrkEz7h1n4k=
-zikichombo.org/codec v0.0.1/go.mod h1:3WzEwc71ekoV+zNpB2bbsXPITVRMFEVBh1zOyYcZYbE=
-zikichombo.org/sound v0.1.1 h1:ZBEmrafI255I9id8EoJKv1ZJ48QmI0bJE4TiNJ9Em8Q=
-zikichombo.org/sound v0.1.1/go.mod h1:akiZR7uLjsosCVBmP0t0hqsOgZ7iydYzjz92wFK2pLQ=
+zikichombo.org/sound v0.1.0-alpha.1 h1:1/tByuGvvertI6PlIt1bk9I0GnwrnwfDml/OSMPULFQ=
+zikichombo.org/sound v0.1.0-alpha.1/go.mod h1:akiZR7uLjsosCVBmP0t0hqsOgZ7iydYzjz92wFK2pLQ=
