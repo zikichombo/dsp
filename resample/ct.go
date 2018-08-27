@@ -2,16 +2,21 @@ package resample
 
 import (
 	"errors"
+	"io"
 	"math"
 
 	"zikichombo.org/dsp/wfn"
 	"zikichombo.org/sound"
+	"zikichombo.org/sound/cil"
+	"zikichombo.org/sound/freq"
 )
 
 const (
 	shiftSize = 64
 )
 
+// Type C holds state for giving a continuous time
+// representation of a sound.Source.
 type C struct {
 	src     sound.Source
 	shift   int
@@ -24,6 +29,123 @@ type C struct {
 	itper   Itper
 }
 
+// SampleRateConverter provides an interface to a dynamic resample rate
+// conversion.
+type SampleRateConverter interface {
+	// Convert is called by the resampling methods in this package to determine
+	// the result frequency in a conversion.
+	//
+	// It is called once for every output sample except the first sample, which
+	// is taken to be at the same point in time as the first input sample.
+	//
+	// The return value should provide the ratio of the output rate to the input
+	// rate.  It is assumed the input rate is fixed and determined by calling
+	// context.
+	Convert() float64
+}
+
+// ConstSampleRateStretcher is a type which implements SampleRateConverter
+// based on a float64 constant sample rate conversion ratio.
+type constSampleRateConverter float64
+
+// Stretch implements SampleRateStretcher
+func (c constSampleRateConverter) Convert() float64 {
+	return float64(c)
+}
+
+// DynResampler is used to dynamically resample a source.
+// It does not implement sound.Source, since the sample rate is
+// fixed.
+type DynResampler struct {
+	ct    *C
+	src   sound.Source
+	conv  SampleRateConverter
+	lasti float64
+	buf   []float64
+}
+
+// NewDynResampler creates a new Dynamic Resampler from a continuous
+// time representation and a sample rate converter.
+func NewDynResampler(c *C, conv SampleRateConverter) *DynResampler {
+	return &DynResampler{ct: c, conv: conv, lasti: 0.0, buf: make([]float64, c.Channels())}
+}
+
+// DynResampler returns the number of channels.
+func (r *DynResampler) Channels() int {
+	return r.ct.src.Channels()
+}
+
+// Close implements sound.Close
+func (r *DynResampler) Close() error {
+	return r.ct.Close()
+}
+
+// Receive is as in sound.Source.Receive.
+func (r *DynResampler) Receive(d []float64) (int, error) {
+	nC := r.ct.Channels()
+	if len(d)%nC != 0 {
+		return 0, sound.ErrChannelAlignment
+	}
+	nF := len(d) / nC
+	for f := 0; f < nF; f++ {
+		if err := r.ct.FrameAt(r.buf, r.lasti); err != nil {
+			if err == io.EOF {
+				cil.Compact(d, nC, f)
+				return f, nil
+			}
+			return 0, err
+		}
+		r.lasti += r.conv.Convert()
+		for c := range r.buf {
+			d[c*nF+f] = r.buf[c]
+		}
+	}
+	return nF, nil
+}
+
+type constResampler struct {
+	*DynResampler
+	outRate freq.T
+}
+
+// SampleRate returns the output sample rate of c.
+func (c *constResampler) SampleRate() freq.T {
+	return c.outRate
+}
+
+// Resample takes a sound.Source src, a desired samplerate r, and
+// an interpolator itp.
+//
+// If itp is nil, it will default to a high quality interpolator
+// (order 10 Blackman windowed sinc interpolation).
+//
+// Resample returns a sound.Source whose SampleRate() is equal to
+// r.
+//
+// After a call to Resample, either the Receive method of src
+// should not be called, or the Receive method of the result
+// should not be called.  Clearly, the former is the usual use case.
+func Resample(src sound.Source, r freq.T, itp Itper) sound.Source {
+	sr := src.SampleRate()
+	if sr == r {
+		return src
+	}
+	tr := float64(sr) / float64(r)
+	conv := constSampleRateConverter(tr)
+	ct := NewC(src, itp)
+	dyn := NewDynResampler(ct, conv)
+	return &constResampler{DynResampler: dyn, outRate: r}
+}
+
+// NewC creates a new continuous time representation
+// of the source src using an interpolator itp.
+//
+// if itp is nil, then a default interpolator of high
+// quality will be used (order 10 Blackman windowed sinc interpolation).
+//
+// NewC calls src.Receive in this process, so src.Receive
+// should not be called if the resulting continuous time
+// interface is used.
 func NewC(src sound.Source, itp Itper) *C {
 	order := 10
 	if itp != nil {
@@ -58,7 +180,7 @@ var errMultiChanAt = errors.New("ErrMultiChanAt")
 // At returns a continuous time interpolated sample at index i.
 // It is the equivalent of
 //
-//  var buf [1]float64
+//	var buf [1]float64
 //	if err := c.FrameAt(buf[:], i); err != nil {
 //		return 0.0, err
 //	}
@@ -68,7 +190,6 @@ func (c *C) At(i float64) (float64, error) {
 	if c.Channels() != 1 {
 		return 0.0, errMultiChanAt
 	}
-	//return c.at(i)
 	var buf [1]float64
 	if err := c.FrameAt(buf[:], i); err != nil {
 		return 0.0, err
@@ -82,7 +203,13 @@ func (c *C) Channels() int {
 	return c.src.Channels()
 }
 
-// FrameAt returns a continuous time interpolated frame at index i.
+// Close closes the underlying source and returns the resulting error.
+func (c *C) Close() error {
+	return c.src.Close()
+}
+
+// FrameAt places a continuous time interpolated frame at index i in
+// dst.
 //
 // FrameAt should be called with i increasing monotonically to guarantee that c
 // does not need to go back in time arbitrarily in its underlying source.
@@ -96,11 +223,11 @@ func (c *C) Channels() int {
 // At the edges, where insufficient or no neighbors are available, the
 // interpolation is truncated symmetrically.
 //
-// FrameAt returns sound.ChannelAlignmentError if len(dst) != c.Channels().
+// FrameAt returns sound.ErrChannelAlignment if len(dst) != c.Channels().
 func (c *C) FrameAt(dst []float64, i float64) error {
 	nC := c.Channels()
 	if len(dst) != nC {
-		return sound.ChannelAlignmentError
+		return sound.ErrChannelAlignment
 	}
 	jf, jr := math.Modf(i)
 	j := int(jf)

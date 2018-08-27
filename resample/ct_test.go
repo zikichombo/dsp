@@ -121,3 +121,34 @@ func TestCLanczos(t *testing.T) {
 		}
 	}
 }
+
+func TestResampleConst(t *testing.T) {
+	fa := 800 * freq.Hertz
+	src := gen.Sin(fa)
+	r := 48000 * freq.Hertz
+	rez := Resample(src, r, nil)
+	rps := fa.RadsPerAt(rez.SampleRate())
+	rads := 0.0
+	N := 1000
+	C := 4
+	d := make([]float64, N)
+	err := 0.0
+	for c := 0; c < C; c++ {
+		n, e := rez.Receive(d)
+		if e != nil {
+			t.Fatal(e)
+		}
+		if n != N {
+			t.Fatalf("got %d frames not %d\n", n, N)
+		}
+		for i := range d {
+			ref := math.Sin(rads)
+			rads += rps
+			got := d[i]
+			err += math.Abs(got - ref)
+		}
+	}
+	if err > 0.001*float64(N)*float64(C) {
+		t.Errorf("resample error too large %f\n", err)
+	}
+}
