@@ -5,6 +5,14 @@ package convol
 
 import "fmt"
 
+// Do performs linear convolution of a and b, placing
+// the result in a and returning it if there is space,
+// otherwise a new slice is allocated.
+//
+// To avoid the allocation, it should be that
+//
+//  cap(a) >= len(a) + len(b) - 1
+//
 func Do(a, b []float64) []float64 {
 	t := New(len(a), len(b))
 	a = t.WinA(a)
@@ -16,11 +24,16 @@ func Do(a, b []float64) []float64 {
 	return res
 }
 
-func To(a, b, dst []float64) []float64 {
+// To performs linear convolution of a and b, placing
+// the result in dst and returning it.
+//
+// if dst does not have sufficient capacity, a new slice
+// is allocated and returned in its place.
+func To(dst, a, b []float64) []float64 {
 	t := New(len(a), len(b))
 	a = t.WinA(a)
 	b = t.WinB(b)
-	res, e := t.ConvTo(a, b, dst)
+	res, e := t.ConvTo(dst, a, b)
 	if e != nil {
 		panic(fmt.Sprintf("error %s\n", e))
 	}

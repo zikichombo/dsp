@@ -9,8 +9,8 @@ func TestK(t *testing.T) {
 	for i := 0; i < 64; i++ {
 		a, b := gen()
 		krn := NewK(a, len(b))
-		td := To(a, b, nil)
-		kd, e := krn.ConvTo(b, nil)
+		td := To(nil, a, b)
+		kd, e := krn.ConvTo(nil, b)
 		if e != nil {
 			t.Error(e)
 			continue

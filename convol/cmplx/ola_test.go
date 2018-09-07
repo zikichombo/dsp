@@ -31,7 +31,7 @@ func TestOla(t *testing.T) {
 		}
 		ola := NewOla(krn, blk)
 		k := NewK(krn, len(seq))
-		kRes, e := k.ConvTo(seq, nil)
+		kRes, e := k.ConvTo(nil, seq)
 		if e != nil {
 			t.Error(e)
 			continue
