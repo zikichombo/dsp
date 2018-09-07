@@ -1,9 +1,6 @@
 // Copyright 2018 The ZikiChombo Authors. All rights reserved.  Use of this source
 // code is governed by a license that can be found in the License file.
 
-// Copyright 2018 Iri France SAS. All rights reserved.  Use of this source code
-// is governed by a license that can be found in the License file.
-
 package lpc
 
 import (
@@ -13,6 +10,7 @@ import (
 
 const eps = 1e-12
 
+// T holds states for doing linear predictive coding of a given order.
 type T struct {
 	rs    []float64
 	k     []float64

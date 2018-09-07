@@ -32,29 +32,47 @@ func (k *K) Conv(arg []float64) ([]float64, error) {
 	return arg[:k.t.L()], nil
 }
 
-func (k *K) ConvTo(arg, dst []float64) ([]float64, error) {
+// ConvTo computes convolution of the kernel
+func (k *K) ConvTo(dst, arg []float64) ([]float64, error) {
 	dst = k.t.WinDst(dst)
 	copy(dst, arg)
 	dst = dst[:len(arg)]
 	return k.Conv(dst)
 }
 
+// Win returns a slice containing everything in c with
+// length and capacity set so that no copying
+// copying takes place if c is used to house argument data
+//
+//  c := k.Win(nil)
+//  for i := range c {
+//    c[i] = ...
+//  }
+//  k.Conv(c)  // no copying
 func (k *K) Win(c []float64) []float64 {
 	return k.t.WinB(c)
 }
 
+// M() returns the length of the kernel.
 func (k *K) M() int {
 	return k.t.m
 }
 
+// N() returns the length of the argument.
 func (k *K) N() int {
 	return k.t.n
 }
 
+// L() returns the length of the result, which is
+//
+//  M() + N() - 1
+//
 func (k *K) L() int {
 	return k.t.L()
 }
 
+// NewK creates a new convolver using "kernel" as
+// the kernel.
 func NewK(kernel []float64, argLen int) *K {
 	k, e := New(len(kernel), argLen).K(kernel)
 	if e != nil {
@@ -63,6 +81,8 @@ func NewK(kernel []float64, argLen int) *K {
 	return k
 }
 
+// K() creates a new kernel-convolver with using "kernel"
+// as the kernel.
 func (t *T) K(kernel []float64) (*K, error) {
 	if len(kernel) != t.m {
 		return nil, fmt.Errorf("kernel length wrong %d != %d", len(kernel), t.m)

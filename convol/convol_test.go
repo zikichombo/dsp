@@ -84,7 +84,7 @@ func TestDirect(t *testing.T) {
 	for i := 0; i < 64; i++ {
 		a, b := gen()
 		d := direct(a, b)
-		o := To(a, b, nil)
+		o := To(nil, a, b)
 		if k := approxEq(d, o, 0.001); k != -1 {
 			t.Errorf("[%d] %v (*) %v @%d: %.2f v %.2f\n", i, a, b, k, d[k], o[k])
 		}

@@ -30,7 +30,7 @@ func (k *K) Conv(arg []complex128) ([]complex128, error) {
 	return arg[:k.t.L()], nil
 }
 
-func (k *K) ConvTo(arg, dst []complex128) ([]complex128, error) {
+func (k *K) ConvTo(dst, arg []complex128) ([]complex128, error) {
 	dst = k.t.WinDst(dst)
 	copy(dst, arg)
 	dst = dst[:len(arg)]

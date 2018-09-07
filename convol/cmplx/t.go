@@ -9,14 +9,15 @@ import (
 	"zikichombo.org/dsp/fft"
 )
 
-// T holds state for performing n by m sized convolutions.
+// T holds state for performing n by m sized linear convolution.
 type T struct {
 	n, m int
 	winB []complex128
 	ft   *fft.T
 }
 
-// New creates a new convolver object.
+// New creates a new convolver object for repeatedly performing
+// linear convolution of two arguments of length m, n.
 func New(m, n int) *T {
 	L := n + m - 1
 	res := &T{
@@ -27,17 +28,19 @@ func New(m, n int) *T {
 	return res
 }
 
-// N returns the length of the second argument.
-func (t *T) N() int {
-	return t.n
-}
-
 // M returns the length of the first argument.
 func (t *T) M() int {
 	return t.m
 }
 
-// L returns the length of the result.
+// N returns the length of the second argument.
+func (t *T) N() int {
+	return t.n
+}
+
+// L returns the length of the result, which is
+//
+//  t.N() + t.M() - 1
 func (t *T) L() int {
 	return t.n + t.m - 1
 }
@@ -58,6 +61,17 @@ func (t *T) PadL() int {
 
 // Conv performs a linear convolution of a and b, placing
 // the results in a and returning them.
+//
+// Conv returns a non-nil error if the lengths of a and b
+// do not conform to t.N() and t.M().
+//
+// Upon return, len(a) = t.L(), which is larger than
+// t.N().  To avoid a copy, a can be created by t.WinDst(nil).
+//
+//  a := t.WinDst(nil)
+//  b := ...
+//  var err error
+//  a, err = t.Conv(a, b)
 func (t *T) Conv(a, b []complex128) ([]complex128, error) {
 	if len(a) != t.m {
 		return nil, fmt.Errorf("operand dimension mismatch: %d != %d", len(a), t.m)
@@ -94,10 +108,10 @@ func (t *T) conv(a, b []complex128) ([]complex128, error) {
 }
 
 // ConvTo performs a linear convolution of a and b,
-// placing the result in dst.  If dst is nil, an
+// placing the result in dst.  If dst is does not have sufficient capacity, an
 // appropriately len- and cap- dimensioned slice
-// is allocated and returned.
-func (t *T) ConvTo(a, b, dst []complex128) ([]complex128, error) {
+// is allocated and returned in its place.
+func (t *T) ConvTo(dst, a, b []complex128) ([]complex128, error) {
 	dst = t.WinDst(dst)
 	copy(dst, a)
 	return t.Conv(dst[:t.m], t.WinB(b))

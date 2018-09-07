@@ -64,7 +64,7 @@ func (o *Ola) WinDst(c []complex128) []complex128 {
 
 // Block processes one block of the convolution
 func (o *Ola) Block(src, dst []complex128) error {
-	conv, e := o.k.ConvTo(src, o.conv)
+	conv, e := o.k.ConvTo(o.conv, src)
 	if e != nil {
 		return e
 	}
