@@ -68,10 +68,14 @@ func TestDilate(t *testing.T) {
 		}
 	}
 	// Many places cite this dilate mechanism as a pitch shift.  But it is not
-	// purely a pitch, as frequencies in the signal are mapped to sinc shaped
-	// functions in the quantized fft frequencies, and edge effects.  Because
-	// of this, some bins will vary from the expected pitch value.  The
-	// bound 0.05 was just manually found.
+	// purely a pitch shift, as 1) frequencies in the signal are mapped to sinc shaped
+	// functions in the quantized fft frequencies, and 2) edge effects.  For
+	// 1), the sinc function determining the magnitude of a frequency bin for
+	// single sinusoid is at a different distance from the center frequency
+	// after a pitch shift.  For 2), window functions or window size at LCM
+	// of sinusoid wavelengths can help.
+	//
+	// The bound 0.05 was just found manually.
 	if float64(ttlErr)/float64(L/2) > 0.05 {
 		t.Errorf("too many errors")
 	}
