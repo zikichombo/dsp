@@ -9,16 +9,6 @@ import (
 	"zikichombo.org/sound/freq"
 )
 
-// Ny gives the index of the first frequency bin at or above the Nyquist limit
-// of a FT of size n.
-func Ny(n int) int {
-	m := n / 2
-	if n%2 == 1 {
-		m++
-	}
-	return m
-}
-
 // FreqBin gives the DFT frequency bin of frequency a in
 // a window of n-sample at rate sFreq
 func FreqBin(sFreq, aFreq freq.T, n int) int {

@@ -21,7 +21,12 @@ func R2Size(n int) int {
 
 // Do performs an in-place FFT on d, if possible.
 //
-// The input samples d must have a cap....blah.
+// As fft implementations require different slice
+// lengths and capacities depending on the length
+// of d, the operation Do will only be in-place if
+// d has len and cap equal to
+//
+//  New(len(d)).Win(d)
 func Do(d []complex128) {
 	// XXX cap dimensions can break this.
 	t := New(len(d))
@@ -54,6 +59,16 @@ func InvTo(dst, src []complex128) []complex128 {
 	dst = t.ensureSrc(dst)
 	t.InvTo(dst, src)
 	return dst
+}
+
+// Ny gives the index of the first frequency bin at or above the Nyquist limit
+// of a FT of size n.
+func Ny(n int) int {
+	m := n / 2
+	if n%2 == 1 {
+		m++
+	}
+	return m
 }
 
 // Dilate changes the frequency basis by a factor of n/m.
