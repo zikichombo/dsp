@@ -115,6 +115,32 @@ func (h HalfComplex) ToCmplx(d []complex128) {
 	}
 }
 
+// ToPolar fills mag, phase with the magnitude and phase
+// of complex numbers stored in h
+func (h HalfComplex) ToPolar(mag, ph []float64) {
+	if len(h) != len(mag) || len(mag) != len(ph) {
+		panic("size mismatch")
+	}
+	if len(h) == 0 {
+		return
+	}
+	mag[0], ph[0] = cmplx.Polar(complex(h[0], 0.0))
+	N := len(h)
+	M := N / 2
+	if M+M != N {
+		M++
+	}
+	var c complex128
+	for i := 1; i < M; i++ {
+		c = complex(h[i], h[N-i])
+		mag[i], ph[i] = cmplx.Polar(c)
+		mag[N-i], ph[N-i] = cmplx.Polar(cmplx.Conj(c))
+	}
+	if M+M == N {
+		mag[M], ph[M] = cmplx.Polar(complex(h[M], 0.0))
+	}
+}
+
 // FromCmplx places a complex spectrum of a real sequence in d.
 //
 // FromCmplx panics if len(h) != len(d).
@@ -142,6 +168,36 @@ func (h HalfComplex) FromCmplx(d []complex128) {
 	}
 	if M+M == N {
 		h[M] = real(d[M])
+	}
+}
+
+// FromPolar places a complex spectrum of a real sequence in h.
+//
+// FromCmplx panics if len(h) != len(d).
+//
+// FromCmplx does not check that d is in the symmetric form
+// of a DFT of real data.
+func (h HalfComplex) FromPolar(mag, ph []float64) {
+	if len(h) != len(mag) || len(mag) != len(ph) {
+		panic("size mismatch")
+	}
+	if len(h) == 0 {
+		return
+	}
+	h[0] = real(cmplx.Rect(mag[0], ph[0]))
+	N := len(h)
+	M := N / 2
+	var c complex128
+	if M+M != N {
+		M++
+	}
+	for i := 1; i < M; i++ {
+		c = cmplx.Rect(mag[0], ph[0])
+		h[i] = real(c)
+		h[N-i] = imag(c)
+	}
+	if M+M == N {
+		h[M] = real(cmplx.Rect(mag[M], ph[M]))
 	}
 }
 
