@@ -222,7 +222,9 @@ func cmplxCmpErr(a, b complex128, eps float64, t *testing.T) error {
 	var e error
 	if cmplx.Abs(a-b) > eps || real(a) == math.NaN() || real(b) == math.NaN() {
 		e = fmt.Errorf("got %f expecting %f", a, b)
-		t.Error(e)
+		if t != nil {
+			t.Error(e)
+		}
 	}
 	return e
 }

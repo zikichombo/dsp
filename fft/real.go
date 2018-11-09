@@ -4,39 +4,46 @@
 package fft
 
 import (
-	"fmt"
 	"math"
 	"math/cmplx"
 )
 
 // Real computes an FFT for a Real only data.
+//
+// For even length transforms, the implementation
+// uses a complex FFT of size N/2 and some pre/post processing.
+// For odd length transforms, the implementtion uses a complex
+// FFT of size N.
 type Real struct {
-	ft     *T
-	n      int
-	cBuf   []complex128
-	twidz  []complex128
-	scaler float64
+	ft     *T           // half sized for even
+	n      int          //
+	cBuf   []complex128 //
+	twidz  []complex128 // only for even
+	scaler float64      // only for even
 }
 
 // NewReal creates a new FFT transformer for
 // float data of length n.
 func NewReal(n int) *Real {
-	if n%2 != 0 {
-		panic("Real only works for even n")
+	if n&1 == 0 {
+		m := n / 2
+		res := &Real{ft: New(m)}
+		res.n = n
+		res.cBuf = res.ft.Win(nil)
+		res.ft.Scale(false)
+		twidz := make([]complex128, m)
+		N := float64(n)
+		for i := range twidz {
+			s, c := math.Sincos(float64(i) * 2.0 * math.Pi / N)
+			twidz[i] = complex(c, -s)
+		}
+		res.twidz = twidz
+		res.scaler = 1.0 / math.Sqrt(N)
+		return res
 	}
-	res := &Real{
-		ft: New(n / 2)}
-	res.cBuf = res.ft.Win(nil)
-	res.ft.Scale(false)
-	twidz := make([]complex128, n/2)
-	N := float64(n)
-	for i := range twidz {
-		s, c := math.Sincos(float64(i) * 2.0 * math.Pi / N)
-		twidz[i] = complex(c, -s)
-	}
-	res.twidz = twidz
-	res.scaler = 1.0 / math.Sqrt(N)
+	res := &Real{ft: New(n)}
 	res.n = n
+	res.cBuf = res.ft.Win(nil)
 	return res
 }
 
@@ -49,12 +56,13 @@ func NewReal(n int) *Real {
 // d overwritten as (i.e. cast to) a HalfComplex object.
 //
 func (r *Real) Do(d []float64) HalfComplex {
-	h := len(r.cBuf)
-	N := 2 * h
-
-	if len(d) != N {
-		panic(fmt.Sprintf("size mismatch got %d not %d", len(d), r.n))
+	if r.n&1 == 0 {
+		return r.evenDo(d)
 	}
+	return r.oddDo(d)
+}
+
+func (r *Real) evenDo(d []float64) HalfComplex {
 	r.pack(d)
 	r.ft.Do(r.cBuf)
 	hc := r.toHC(d)
@@ -67,12 +75,29 @@ func (r *Real) Do(d []float64) HalfComplex {
 	return hc
 }
 
+func (r *Real) oddDo(d []float64) HalfComplex {
+	for i, v := range d {
+		r.cBuf[i] = complex(v, 0.0)
+	}
+	r.ft.Do(r.cBuf)
+	res := HalfComplex(d)
+	res.FromCmplx(r.cBuf)
+	return res
+}
+
 // Inv computes the inverse transform of a real data
 // from a HalfComplex object.
 //
 // Inv operates in place but returns the same data as hc, cast to
 // a []float64.
 func (r *Real) Inv(hc HalfComplex) []float64 {
+	if r.n&1 == 0 {
+		return r.evenInv(hc)
+	}
+	return r.oddInv(hc)
+}
+
+func (r *Real) evenInv(hc HalfComplex) []float64 {
 	if r.scaler != 1.0 {
 		for i := range hc {
 			hc[i] /= r.scaler
@@ -83,24 +108,36 @@ func (r *Real) Inv(hc HalfComplex) []float64 {
 	res := []float64(hc)
 	r.unpack(res)
 	if r.scaler != 1.0 {
+		sc := 1.0 / float64(len(r.cBuf))
 		for i := range res {
-			res[i] /= float64(len(r.cBuf))
+			res[i] *= sc
 		}
 	}
 	return res
 }
 
+func (r *Real) oddInv(hc HalfComplex) []float64 {
+	hc.ToCmplx(r.cBuf)
+	r.ft.Inv(r.cBuf)
+	for i, c := range r.cBuf {
+		hc[i] = real(c)
+	}
+	return []float64(hc)
+}
+
 // Scale sets whether or not r scales the transform results.
 // Scale returns whether or not r was configured to scale
 // the transform results prior to calling Scale.
-func (r *Real) Scale(v bool) bool {
-	res := r.scaler != 1.0
-	if !v {
-		r.scaler = 1.0
-	} else {
-		r.scaler = 1.0 / math.Sqrt(float64(r.n))
+func (r *Real) Scale(v bool) {
+	if r.n&1 == 0 {
+		if !v {
+			r.scaler = 1.0
+		} else {
+			r.scaler = 1.0 / math.Sqrt(float64(r.n))
+		}
+		return
 	}
-	return res
+	r.ft.Scale(v)
 }
 
 // N returns the length of the arguments to the transform
@@ -123,25 +160,30 @@ func (r *Real) toHC(d []float64) HalfComplex {
 		halfI = complex(0, 0.5)
 	)
 	N := len(d)
-	h := N / 2
+	if N != r.n {
+		panic("invalid length")
+	}
 	res := HalfComplex(d)
+	if N == 0 {
+		return res
+	}
 	cb := r.cBuf
+	h := len(cb)
 
-	if N != 0 {
-		a := cb[0]
-		f0 := halfR * a
-		g0 := -halfI * a
-		shift := r.twidz[0]
-		res.SetCmplx(0, complex(2.0, 0.)*(f0+shift*g0))
+	a := cb[0]
+	f0 := halfR * a
+	g0 := -halfI * a
+	shift := r.twidz[0]
+	res.SetCmplx(0, complex(2.0, 0.0)*(f0+shift*g0))
+	if h+h == N {
 		res[h] = 2.0 * real(f0-g0)
 	}
 
-	twidz := r.twidz
 	for i := 1; i < h; i++ {
 		a, b := cb[i], cmplx.Conj(cb[h-i])
 		fi := halfR * (a + b)
 		gi := halfI * (b - a)
-		shift := twidz[i]
+		shift := r.twidz[i]
 		xi := fi + shift*gi
 		res.SetCmplx(i, xi)
 	}
@@ -156,18 +198,25 @@ func (r *Real) fromHC(hc HalfComplex) {
 		halfR = complex(0.5, 0)
 		halfI = complex(0, 0.5)
 	)
-	h := len(r.cBuf)
-	if len(hc) != h*2 {
+	N := len(hc)
+	if N != r.n {
 		panic("invalid HalfComplex length")
 	}
-	if len(hc) > 0 {
-		a, b := hc.Cmplx(0), 0i
-		f := halfR * (a + b)
-		g := cmplx.Conj(r.twidz[0]) * (a - f)
-		r.cBuf[0] = halfR * (f/halfR - g/halfI)
-		ny := 0.5 * hc[h]
-		r.cBuf[0] = complex(real(r.cBuf[0])+ny, imag(r.cBuf[0])-ny)
+	if N == 0 {
+		return
 	}
+	h := len(r.cBuf)
+	a, b := hc.Cmplx(0), 0i
+	f := halfR * (a + b)
+	g := cmplx.Conj(r.twidz[0]) * (a - f)
+	r.cBuf[0] = halfR * (f/halfR - g/halfI)
+	var ny float64
+	if h+h == N {
+		ny = 0.5 * hc[h]
+	} else {
+		ny = 0.5 * hc[h-1]
+	}
+	r.cBuf[0] = complex(real(r.cBuf[0])+ny, imag(r.cBuf[0])-ny)
 	var j int
 	for i := 1; i < h; i++ {
 		j = h - i
@@ -180,15 +229,19 @@ func (r *Real) fromHC(hc HalfComplex) {
 
 func (r *Real) pack(d []float64) {
 	cb := r.cBuf
-	for i := range cb {
+	end := len(cb)
+	for i := 0; i < end; i++ {
 		cb[i] = complex(d[2*i], d[2*i+1])
 	}
 }
 
 func (r *Real) unpack(d []float64) {
 	cb := r.cBuf
+	end := len(cb)
 	var re, im float64
-	for i, v := range cb {
+	var v complex128
+	for i := 0; i < end; i++ {
+		v = cb[i]
 		re = real(v)
 		im = imag(v)
 		d[2*i] = re

@@ -10,12 +10,13 @@ import (
 )
 
 func TestRealEquivCmplx(t *testing.T) {
-	testRealEquivCmplx(true, t)
-	testRealEquivCmplx(false, t)
+	for _, N := range []int{64, 65} {
+		testRealEquivCmplx(N, true, t)
+		testRealEquivCmplx(N, false, t)
+	}
 }
 
-func testRealEquivCmplx(scale bool, t *testing.T) {
-	N := 64
+func testRealEquivCmplx(N int, scale bool, t *testing.T) {
 	df := make([]float64, N)
 	rft := NewReal(N)
 	ft := New(N)
@@ -32,26 +33,29 @@ func testRealEquivCmplx(scale bool, t *testing.T) {
 	hc := rft.Do(df)
 	ft.Do(dc)
 	for i := 0; i < hc.Len(); i++ {
-		cmplxCmpErr(hc.Cmplx(i), dc[i], 1e-10, t)
+		if err := cmplxCmpErr(hc.Cmplx(i), dc[i], 1e-10, nil); err != nil {
+			t.Errorf("at %d got %f not %f\n", i, hc.Cmplx(i), dc[i])
+		}
 	}
 }
 
 func TestRealInv(t *testing.T) {
 	iters := 1
-	N := 32
-	d := make([]float64, N)
-	tmp := make([]float64, N)
-	for i := 0; i < iters; i++ {
-		rft := NewReal(N)
-		for j := 0; j < N; j++ {
-			d[j] = rand.Float64()
-			tmp[j] = d[j]
-		}
-		sp := rft.Do(d)
-		dd := rft.Inv(sp)
-		for j, v := range dd {
-			if math.Abs(v-tmp[j]) > 1e-10 {
-				t.Errorf("iter %d idx %d got %f not %f\n", i, j, v, tmp[j])
+	for _, N := range []int{32, 33} {
+		d := make([]float64, N)
+		tmp := make([]float64, N)
+		for i := 0; i < iters; i++ {
+			rft := NewReal(N)
+			for j := 0; j < N; j++ {
+				d[j] = rand.Float64()
+				tmp[j] = d[j]
+			}
+			sp := rft.Do(d)
+			dd := rft.Inv(sp)
+			for j, v := range dd {
+				if math.Abs(v-tmp[j]) > 1e-10 {
+					t.Errorf("iter %d idx %d got %f not %f\n", i, j, v, tmp[j])
+				}
 			}
 		}
 	}

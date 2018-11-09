@@ -92,7 +92,7 @@ func (t *T) conv(a, b []float64) ([]float64, error) {
 	t.ft.Scale(false)
 	hca := t.ft.Do(a)
 	t.ft.Scale(true)
-	hca = hca.Dot(hcb)
+	hca = hca.MulElems(hcb)
 	a = t.ft.Inv(hca)
 	return a[:t.L()], nil
 }

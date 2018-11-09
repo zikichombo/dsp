@@ -27,7 +27,7 @@ func (k *K) Conv(arg []float64) ([]float64, error) {
 	}
 	arg = k.t.pad(k.t.WinB(arg), k.t.PadL())
 	hc := k.t.ft.Do(arg)
-	hc.Dot(k.kernel)
+	hc.MulElems(k.kernel)
 	arg = k.t.ft.Inv(hc)
 	return arg[:k.t.L()], nil
 }
