@@ -54,6 +54,14 @@ func NewSN(n int) *S {
 	return &S{mags: mags, phases: phases, neg: neg, min: min, max: max}
 }
 
+// NewSHalfComplex creates a new spectrum object from a
+// HalfComplex object.
+func NewSHalfComplex(hc HalfComplex) *S {
+	s := NewSN(len(hc))
+	s.FromHalfComplex(hc)
+	return s
+}
+
 // At returns the complex representing the spectrum value at
 // symmetric index i.
 func (s *S) At(i int) complex128 {
