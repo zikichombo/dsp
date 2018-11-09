@@ -218,19 +218,6 @@ func (s *S) ItpPeaks(dst []float64) []float64 {
 	return dst
 }
 
-func (s *S) FromHalfComplex(hc HalfComplex) error {
-	if len(hc) != len(s.mags) {
-		return fmt.Errorf("mismatched spectrum lengths: %d != %d", len(hc), len(s.mags))
-	}
-	if len(hc) > 0 {
-		s.mags[0] = hc[0]
-		s.phases[0] = 0.0
-	}
-	for i := 1; i < len(hc); i++ {
-	}
-	return nil
-}
-
 // FromRect resets s to use the complex spectrum d.
 func (s *S) FromRect(d []complex128) error {
 	if len(d) != len(s.mags) {
@@ -251,6 +238,21 @@ func (s *S) FromRect(d []complex128) error {
 	return nil
 }
 
+// FromHalfComplex makes s contain spectrum from hc.
+//
+// FromHalfComplex returns a non-nil error if
+// s doesn't contain the same number of elements as hc.
+func (s *S) FromHalfComplex(hc HalfComplex) error {
+	if len(hc) != len(s.mags) {
+		return fmt.Errorf("mismatched spectrum lengths: %d != %d", len(hc), len(s.mags))
+	}
+	if len(hc) == 0 {
+		return nil
+	}
+	hc.ToPolar(s.mags, s.phases)
+	return nil
+}
+
 // Rect puts the spectrum in rectangular complex (real + imag) form in dst.
 // If dst doesn't have capacity for the data, then a new slice is allocated
 // and returned.  Otherwise, the results are placed in dst and returned.
@@ -265,7 +267,17 @@ func (s *S) Rect(dst []complex128) []complex128 {
 	return dst
 }
 
-func (s *S) HalfComplex(dst HalfComplex) HalfComplex {
+// ToHalfComplex places the spectrum s in dst.
+//
+// If dst doesn't have capacity for the data, then a new slice
+// is allocated and returned.  Otherwise, the results are placed in dst
+// and returned.
+func (s *S) ToHalfComplex(dst HalfComplex) HalfComplex {
+	if cap(dst) != len(s.mags) {
+		dst = HalfComplex(make([]float64, len(s.mags)))
+	}
+	dst = dst[:len(s.mags)]
+	dst.FromPolar(s.mags, s.phases)
 	return dst
 }
 

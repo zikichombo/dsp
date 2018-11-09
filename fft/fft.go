@@ -65,7 +65,7 @@ func InvTo(dst, src []complex128) []complex128 {
 // of a FT of size n.
 func Ny(n int) int {
 	m := n / 2
-	if n%2 == 1 {
+	if n&1 != 0 {
 		m++
 	}
 	return m
