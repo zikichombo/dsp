@@ -3,12 +3,15 @@
 
 package fft
 
-// HalfComplex is a format for storing complex spectra of
-// real data of length N in a []float64 of length N.
-// Such spectra have Hermitian symmetry.
+import (
+	"math/cmplx"
+)
+
+// HalfComplex is a format for storing complex spectra of real data of length N
+// in a []float64 of length N.  Such spectra have Hermitian symmetry.
 //
-// Since the spectrum is so symmetric, all the information
-// will fit, provided we reflect around the points correctly.
+// Since the spectrum is so symmetric, all the information will fit, provided
+// we reflect around the points correctly.
 //
 // The format is (like in fftw):
 //
@@ -20,20 +23,24 @@ package fft
 //
 //  - Due to the symmetry, i0 is always 0 and i_{n/2} is always 0 if N is even.
 //
-//  - The number of reals is 2 greater than the number of imaginaries when N is even
+//  - The number of reals is 2 greater than the number of imaginaries when N is
+//  even
 //
-//  - The number of reals is 1 greater than the number of imaginaries when N is odd
-//    because i_{n/2} doesn't exist.
+//  - The number of reals is 1 greater than the number of imaginaries when N is
+//  odd because i_{n/2} doesn't exist.
 //
 type HalfComplex []float64
 
 // Cmplx returns the complex128 representation of element i.
 func (h HalfComplex) Cmplx(i int) complex128 {
 	N := len(h)
+	re := h[i]
+	im := 0.0
 	if i == 0 || 2*i == N {
-		return complex(h[i], 0.0)
+		return complex(re, im)
 	}
-	return complex(h[i], h[N-i])
+	im = h[N-i]
+	return complex(re, im)
 }
 
 // SetCmplx sets the complex number i to c in h.
@@ -76,20 +83,76 @@ func (h HalfComplex) SetImag(i int, v float64) {
 	h[N-i] = v
 }
 
-// Len returns the number of complex numbers in h.
+// Len returns the number of complex numbers in h, which does not
+// include elements with symmetric pairs.
 func (h HalfComplex) Len() int {
 	n := len(h)
 	return n/2 + 1
 }
 
-// Dot computes the complex dot-product (elementwise multiplication) of a and b, placing
-// the result in a and returning it. Dot panics if a.Len() != b.Len().
-func (a HalfComplex) Dot(b HalfComplex) HalfComplex {
-	var ca, cb complex128
-	N := a.Len()
-	if b.Len() != N {
+// ToCmplx fills d with complex numbers stored in h.
+//
+// if len(h) != len(d), then ToCmplx panics.
+func (h HalfComplex) ToCmplx(d []complex128) {
+	if len(h) != len(d) {
 		panic("size mismatch")
 	}
+	if len(h) == 0 {
+		return
+	}
+	d[0] = complex(h[0], 0.0)
+	N := len(d)
+	M := N / 2
+	if M+M != N {
+		M++
+	}
+	for i := 1; i < M; i++ {
+		d[i] = complex(h[i], h[N-i])
+		d[N-i] = cmplx.Conj(d[i])
+	}
+	if M+M == N {
+		d[M] = complex(h[M], 0.0)
+	}
+}
+
+// FromCmplx places a complex spectrum of a real sequence in d.
+//
+// FromCmplx panics if len(h) != len(d).
+//
+// FromCmplx does not check that d is in the symmetric form
+// of a DFT of real data.
+func (h HalfComplex) FromCmplx(d []complex128) {
+	if len(h) != len(d) {
+		panic("size mismatch")
+	}
+	if len(h) == 0 {
+		return
+	}
+	h[0] = real(d[0])
+	N := len(d)
+	M := N / 2
+	var c complex128
+	if M+M != N {
+		M++
+	}
+	for i := 1; i < M; i++ {
+		c = d[i]
+		h[i] = real(c)
+		h[N-i] = imag(c)
+	}
+	if M+M == N {
+		h[M] = real(d[M])
+	}
+}
+
+// MulElems computes the elementwise multiplication of a and b, placing
+// the result in a and returning it. MulElems panics if a.Len() != b.Len().
+func (a HalfComplex) MulElems(b HalfComplex) HalfComplex {
+	if len(a) != len(b) {
+		panic("size mismatch")
+	}
+	N := a.Len()
+	var ca, cb complex128
 	for i := 0; i < N; i++ {
 		ca = a.Cmplx(i)
 		cb = b.Cmplx(i)
