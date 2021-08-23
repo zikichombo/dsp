@@ -45,4 +45,4 @@
 // only interface uses the complex interface for half-sized inputs together
 // with some O(N) pre/post processing.
 //
-package fft /* import "zikichombo.org/dsp/fft" */
+package fft

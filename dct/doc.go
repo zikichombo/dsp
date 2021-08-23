@@ -9,5 +9,4 @@
 // see http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.118.3056&rep=rep1&type=pdf#page=34
 // and https://www.nayuki.io/page/fast-discrete-cosine-transform-algorithms
 //
-// Package dct is part of http://zikichombo.org
-package dct /* import "zikichombo.org/dsp/dct" */
+package dct

@@ -6,7 +6,7 @@ package cmplx
 import (
 	"fmt"
 
-	"zikichombo.org/dsp/fft"
+	"github.com/zikichombo/dsp/fft"
 )
 
 // T holds state for performing n by m sized linear convolution.

@@ -1,3 +1,5 @@
-module zikichombo.org/dsp
+module github.com/zikichombo/dsp
 
-require zikichombo.org/sound v0.2.0-alpha.3
+go 1.17
+
+require github.com/zikichombo/sound v0.2.1 // indirect

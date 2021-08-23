@@ -10,7 +10,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"zikichombo.org/sound/freq"
+	"github.com/zikichombo/sound/freq"
 )
 
 func TestR2(t *testing.T) {

@@ -5,7 +5,7 @@ import (
 	"math/rand"
 	"testing"
 
-	"zikichombo.org/dsp/wfn"
+	"github.com/zikichombo/dsp/wfn"
 )
 
 var d = []float64{0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0,

@@ -3,4 +3,4 @@
 
 // Package cmplx provides convolution implementations for complex kernels and
 // sequences.
-package cmplx /* import "zikichombo.org/dsp/convol/cmplx" */
+package cmplx

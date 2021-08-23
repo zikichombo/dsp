@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	"zikichombo.org/sound/freq"
+	"github.com/zikichombo/sound/freq"
 )
 
 type tstCfg struct {

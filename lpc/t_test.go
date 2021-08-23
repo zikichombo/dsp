@@ -7,8 +7,8 @@ import (
 	"math"
 	"testing"
 
-	"zikichombo.org/sound/freq"
-	"zikichombo.org/sound/gen"
+	"github.com/zikichombo/sound/freq"
+	"github.com/zikichombo/sound/gen"
 )
 
 func TestLpc(t *testing.T) {

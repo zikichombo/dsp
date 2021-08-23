@@ -8,8 +8,8 @@ import (
 	"math"
 	"math/cmplx"
 
-	"zikichombo.org/dsp/fft"
-	"zikichombo.org/sound/freq"
+	"github.com/zikichombo/dsp/fft"
+	"github.com/zikichombo/sound/freq"
 )
 
 type T struct {

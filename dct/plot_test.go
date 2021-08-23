@@ -11,9 +11,9 @@ import (
 	"testing"
 	"time"
 
-	"zikichombo.org/sound/freq"
-	"zikichombo.org/sound/gen"
-	"zikichombo.org/sound/ops"
+	"github.com/zikichombo/sound/freq"
+	"github.com/zikichombo/sound/gen"
+	"github.com/zikichombo/sound/ops"
 )
 
 func TestPlot(t *testing.T) {
